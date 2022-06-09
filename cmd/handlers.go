@@ -99,3 +99,33 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Produto não encontrado ou nenhum campo foi alterado"))
 	}
 }
+
+func DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("DeleteProduct só aceita requesição do tipo POST"))
+		return
+	}
+
+	bodyDecoder := json.NewDecoder(r.Body)
+
+	var produto Product
+	bodyDecoder.Decode(&produto)
+
+	if produto.Id <= 0 {
+		w.Write([]byte("Precisa informar o ID do produto para deletar"))
+	} else {
+		result, err := mysql.DeleteProduct(produto.Id)
+
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		if result {
+			w.Write([]byte("Produto deletado com sucesso"))
+		} else {
+			w.Write([]byte("Produto não encontrado"))
+		}
+	}
+}
